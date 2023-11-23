@@ -51,7 +51,6 @@ models_to_train = {
     'Chebyshev Convolution (tx+agg)': models.ChebyshevConvolution(args, [1, 2], data.num_features, args.hidden_units).to(args.device),
     'GATv2 Convolution (tx)': models.GATv2Convolution(args, data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
     'GATv2 Convolution (tx+agg)': models.GATv2Convolution(args, data.num_features, args.hidden_units).to(args.device),
-
     'Custom GAT': GAT(num_of_layers=3, num_heads_per_layer=[1, 4, 1],
                      num_features_per_layer=[args.num_features, args['hidden_units'],
                      args['hidden_units']//2, args['num_classes']], device=args.device).to(args.device)
