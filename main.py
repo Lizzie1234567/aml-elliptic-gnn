@@ -8,6 +8,9 @@ from train import train, test
 from models import models
 from argparse import ArgumentParser
 from models.custom_gat.model import GAT
+import matplotlib.pyplot as plt
+import networkx as nx
+
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
@@ -42,8 +45,45 @@ print("iterations-> ",counter)
 print("transactions found->",len(keep))
 print("seed : ",seed)
 print("seed tried:", tries)
-print("transactions : \n")
 
+
+plt.figure(figsize=(10, 10))
+plt.subplot(2, 2, 1)  
+    
+X = features_unknown[tx_features+agg_features]
+preds = pd.DataFrame(clf.predict(X),columns=['class'])
+features_unknown = features_unknown[['txId']+tx_features+agg_features].join(preds)
+features_unknown['class'] = features_unknown['class'].apply(lambda x: 2 if x==0 else 1)
+features_classified = features_known.append(features_unknown)
+features_unknown['class'].hist()
+features_unknown['class'].value_counts(normalize=True) * 100
+
+plt.subplot(2, 2, 2) 
+features_known['class'].hist()
+features_known['class'].value_counts(normalize=True) * 100
+
+plt.subplot(2, 2, 3)  
+
+transaction_graph = nx.from_pandas_edgelist(edgeList,source='txId1', target='txId2')
+transaction_type = features[features["txId"].isin(list(transaction_graph.nodes))]["class"].sort_index()
+transaction_type = transaction_type.apply(lambda x: 'gray' if x == 0 else x)
+transaction_type = transaction_type.apply(lambda x: 'red' if x == 1 else x)
+transaction_type = transaction_type.apply(lambda x: 'green' if x == 2 else x)
+my_pos = nx.spring_layout(transaction_graph, seed = 100)
+nx.draw(transaction_graph,node_size=50, pos=my_pos,node_color=list(transaction_type),width=1)
+
+plt.subplot(2, 2, 4)  # 设置子图位置
+transaction_graph = nx.from_pandas_edgelist(edgeList,source='txId1', target='txId2')
+transaction_type = features_classified[features_classified["txId"].isin(list(transaction_graph.nodes))]["class"].sort_index()
+transaction_type = transaction_type.apply(lambda x: 'gray' if x == 0 else x)
+transaction_type = transaction_type.apply(lambda x: 'red' if x == 1 else x)
+transaction_type = transaction_type.apply(lambda x: 'green' if x == 2 else x)
+my_pos = nx.spring_layout(transaction_graph, seed = 100)
+nx.draw(transaction_graph,node_size=50, pos=my_pos,node_color=list(transaction_type),width=1)
+
+
+plt.tight_layout()  # 调整子图的布局
+plt.show()
 
 
 
