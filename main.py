@@ -30,6 +30,9 @@ data_path = args.data_path if data_path is None else data_path
 features, edges,features_unknown= load_data(data_path)
 features_noAgg, edges_noAgg,features_unknown_noAgg = load_data(data_path, noAgg=True)
 
+
+
+
 deep_levels = 20
 keep = {}
 tries = 0
@@ -54,7 +57,7 @@ X = features_unknown[tx_features+agg_features]
 preds = pd.DataFrame(clf.predict(X),columns=['class'])
 features_unknown = features_unknown[['txId']+tx_features+agg_features].join(preds)
 features_unknown['class'] = features_unknown['class'].apply(lambda x: 2 if x==0 else 1)
-features_classified = features_known.append(features_unknown)
+features_classified = features.append(features_unknown)
 features_unknown['class'].hist()
 features_unknown['class'].value_counts(normalize=True) * 100
 
@@ -84,6 +87,7 @@ nx.draw(transaction_graph,node_size=50, pos=my_pos,node_color=list(transaction_t
 
 plt.tight_layout()  # 调整子图的布局
 plt.show()
+plt.savefig('transaction_graph.png')
 
 
 
@@ -95,6 +99,8 @@ plt.show()
 u.seed_everything(42)
 
 data = data_to_pyg(features, edges)
+features_unknown=data_to_pyg(features_unknown, edges)
+
 data_noAgg = data_to_pyg(features_noAgg, edges_noAgg)
 
 print("Graph data loaded successfully")
