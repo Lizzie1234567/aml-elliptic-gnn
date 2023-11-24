@@ -50,56 +50,14 @@ print("seed : ",seed)
 print("seed tried:", tries)
 
 
-plt.figure(figsize=(10, 10))
-plt.subplot(2, 2, 1)  
-    
-
-features_unknown['class'] = features_unknown['class'].apply(lambda x: 2 if x==0 else 1)
-features_classified = features.append(features_unknown)
-features_unknown['class'].hist()
-features_unknown['class'].value_counts(normalize=True) * 100
-
-plt.subplot(2, 2, 2) 
-features_known['class'].hist()
-features_known['class'].value_counts(normalize=True) * 100
-
-plt.subplot(2, 2, 3)  
-
-transaction_graph = nx.from_pandas_edgelist(edgeList,source='txId1', target='txId2')
-transaction_type = features[features["txId"].isin(list(transaction_graph.nodes))]["class"].sort_index()
-transaction_type = transaction_type.apply(lambda x: 'gray' if x == 0 else x)
-transaction_type = transaction_type.apply(lambda x: 'red' if x == 1 else x)
-transaction_type = transaction_type.apply(lambda x: 'green' if x == 2 else x)
-my_pos = nx.spring_layout(transaction_graph, seed = 100)
-nx.draw(transaction_graph,node_size=50, pos=my_pos,node_color=list(transaction_type),width=1)
-
-plt.subplot(2, 2, 4)  # 设置子图位置
-transaction_graph = nx.from_pandas_edgelist(edgeList,source='txId1', target='txId2')
-transaction_type = features_classified[features_classified["txId"].isin(list(transaction_graph.nodes))]["class"].sort_index()
-transaction_type = transaction_type.apply(lambda x: 'gray' if x == 0 else x)
-transaction_type = transaction_type.apply(lambda x: 'red' if x == 1 else x)
-transaction_type = transaction_type.apply(lambda x: 'green' if x == 2 else x)
-my_pos = nx.spring_layout(transaction_graph, seed = 100)
-nx.draw(transaction_graph,node_size=50, pos=my_pos,node_color=list(transaction_type),width=1)
-
-
-plt.tight_layout()  # 调整子图的布局
-plt.show()
-plt.savefig('transaction_graph.png')
-
-
-
-
-
-
 
 
 u.seed_everything(42)
 
-data = data_to_pyg(features, edges)
-data_unknown=data_to_pyg(features_unknown, edges)
+data = data_to_pyg(features, df_known_edges)
+data_unknown=data_to_pyg(features_unknown, df_unkown_edges)
 
-data_noAgg = data_to_pyg(features_noAgg, edges_noAgg)
+data_noAgg = data_to_pyg(features_noAgg, df_known_edges_noAgg)
 
 print("Graph data loaded successfully")
 print("="*50)
@@ -161,15 +119,17 @@ for i in range(0, len(model_list), 2):
     print('-'*50)
     print(f"Computing metrics for model: {name}")
     compare_illicit = compare_illicit.append(u.compute_metrics(model, name, data, compare_illicit), ignore_index=True)
+  
     print('-'*50)
-    test(model, data_unknown)
+  
+    out=test_unknown(model, data_unknown)
     print('-'*50)
     print(f"Drawing pictures for model: {name}")
 
     plt.figure(figsize=(10, 10))
     plt.subplot(2, 2, 1)  
         
-    preds = pd.DataFrame(clf.predict(X),columns=['class'])
+    preds = pd.DataFrame(out,columns=['class'])
     features_unknown = features_unknown[['txId']+tx_features+agg_features].join(preds)
     features_unknown['class'] = features_unknown['class'].apply(lambda x: 2 if x==0 else 1)
     features_classified = features.append(features_unknown)
