@@ -27,8 +27,8 @@ print("="*50)
 print("Loading graph data...")
 data_path = args.data_path if data_path is None else data_path
 
-features, edges = load_data(data_path)
-features_noAgg, edges_noAgg = load_data(data_path, noAgg=True)
+features, edges,features_unknown= load_data(data_path)
+features_noAgg, edges_noAgg,features_unknown_noAgg = load_data(data_path, noAgg=True)
 
 deep_levels = 20
 keep = {}
