@@ -4,6 +4,48 @@ import os.path as osp
 from torch_geometric.data import Data
 from torch_geometric.transforms import RandomNodeSplit
 
+def tracker(deep_levels, seed, edges):
+  tmp = {seed}
+  keep = set()
+  counter = 0
+
+  for i in range(deep_levels):
+    for j in tmp:
+      counter = counter + 1
+      one = edges[edges['txId1'] == j]
+      #add first
+      tmp = set.union(tmp,set(one['txId2'].iloc[:]))
+
+      two = edges[edges['txId2'] == j]
+      #add second
+      tmp = set.union(tmp,set(two['txId1'].iloc[:]))
+      # check if connected group is empty
+      if(len(one) == 0 & len(two) == 0):
+          edgeList = edges[edges['txId1'].isin(keep)]
+          return keep,edgeList,counter,True
+
+      keep.add(j)
+      tmp.remove(j)
+
+  edgeList = edges[edges['txId1'].isin(keep)]
+  return keep,edgeList,counter,False
+
+
+def get_random_illicit(features):
+  # get a random illicit transaction
+  randomIllicit = features[features["class"] == 1].sample(1)["txId"]
+  seed = randomIllicit.to_numpy()[0]
+  # define the final DF containg the cluster
+  return seed
+
+
+def get_random_licit(features):
+  # get a random illicit transaction
+  randomLicit = features[features["class"] == 2].sample(1)["txId"]
+  seed = randomLicit.to_numpy()[0]
+  # define the final DF containg the cluster
+  return seed
+
 def load_data(data_path, noAgg=False):
 
     # Read edges, features and classes from csv files
