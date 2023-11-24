@@ -102,13 +102,13 @@ def load_data(data_path, noAgg=False):
     features_unknown["class"] = features_unknown["class"].apply(lambda name: class_unknown_idx[name])
 
     # Apply index encoding to edges
-    df_edges["txId1"] = df_edges["txId1"].apply(lambda name: features_idx[name])
-    df_edges["txId2"] = df_edges["txId2"].apply(lambda name: features_idx[name])
+    df_known_edges["txId1"] = df_known_edges["txId1"].apply(lambda name: features_idx[name])
+    df_known_edges["txId2"] = df_known_edges["txId2"].apply(lambda name: features_idx[name])
 
-     df_edges["txId1"] = df_edges["txId1"].apply(lambda name: features_unknown_idx[name])
-    df_edges["txId2"] = df_edges["txId2"].apply(lambda name: features_unknown_idx[name])
+     df_unkown_edges["txId1"] = df_unkown_edges["txId1"].apply(lambda name: features_unknown_idx[name])
+    df_unkown_edges["txId2"] = df_unkown_edges["txId2"].apply(lambda name: features_unknown_idx[name])
     
-    return df_class_feature, df_edges,features_unknown
+    return df_class_feature, features_unknown, df_edges,df_known_edges, df_unkown_edges
 
 
 def data_to_pyg(df_class_feature, df_edges):
