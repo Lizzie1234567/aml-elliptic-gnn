@@ -3,14 +3,11 @@ import torch
 import pandas as pd
 import utils as u
 import os
-from loader import load_data, data_to_pyg,tracker,get_random_illicit
+from loader import load_data, data_to_pyg
 from train import train, test
 from models import models
 from argparse import ArgumentParser
 from models.custom_gat.model import GAT
-import matplotlib.pyplot as plt
-import networkx as nx
-
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
@@ -27,20 +24,13 @@ print("="*50)
 print("Loading graph data...")
 data_path = args.data_path if data_path is None else data_path
 
-features,edges= load_data(data_path)
-features_noAgg, edges_noAgg= load_data(data_path, noAgg=True)
-
-
-
-
-
-
+features, edges = load_data(data_path)
+features_noAgg, edges_noAgg = load_data(data_path, noAgg=True)
 
 u.seed_everything(42)
 
 data = data_to_pyg(features, edges)
-
-data_noAgg = data_to_pyg(features_noAgg, df_known_edges_noAgg)
+data_noAgg = data_to_pyg(features_noAgg, edges_noAgg)
 
 print("Graph data loaded successfully")
 print("="*50)
@@ -61,7 +51,8 @@ models_to_train = {
     'Chebyshev Convolution (tx+agg)': models.ChebyshevConvolution(args, [1, 2], data.num_features, args.hidden_units).to(args.device),
     'GATv2 Convolution (tx)': models.GATv2Convolution(args, data_noAgg.num_features, args.hidden_units_noAgg).to(args.device),
     'GATv2 Convolution (tx+agg)': models.GATv2Convolution(args, data.num_features, args.hidden_units).to(args.device)
-    # 'Custom GAT': GAT(num_of_layers=3, num_heads_per_layer=[1, 4, 1],
+
+    #'Custom GAT': GAT(num_of_layers=3, num_heads_per_layer=[1, 4, 1],
     #                  num_features_per_layer=[args.num_features, args['hidden_units'],
     #                  args['hidden_units']//2, args['num_classes']], device=args.device).to(args.device)
 }
@@ -102,11 +93,7 @@ for i in range(0, len(model_list), 2):
     print('-'*50)
     print(f"Computing metrics for model: {name}")
     compare_illicit = compare_illicit.append(u.compute_metrics(model, name, data, compare_illicit), ignore_index=True)
-  
     print('-'*50)
-  
-    
-    
     
 
 compare_illicit.to_csv(os.path.join(data_path, 'metrics.csv'), index=False)
@@ -115,4 +102,3 @@ print('Results saved to metrics.csv')
 u.plot_results(compare_illicit)
 
 u.aggregate_plot(compare_illicit)
-
