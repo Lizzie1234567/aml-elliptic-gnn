@@ -129,7 +129,7 @@ for i in range(0, len(model_list), 2):
     plt.figure(figsize=(10, 10))
     plt.subplot(2, 2, 1)  
         
-    preds = pd.DataFrame(out,columns=['class'])
+    preds = pd.DataFrame(out.tolist(),columns=['class'])
     features_unknown = features_unknown[['txId']+tx_features+agg_features].join(preds)
     features_unknown['class'] = features_unknown['class'].apply(lambda x: 2 if x==0 else 1)
     features_classified = features.append(features_unknown)
