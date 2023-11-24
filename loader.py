@@ -70,27 +70,43 @@ def load_data(data_path, noAgg=False):
     df_classes.loc[df_classes['class'] == 'unknown', 'class'] = '3'
 
     # Merge classes and features in one Dataframe
-    df_class_feature = pd.merge(df_classes, df_features)
+    df_feature = pd.merge(df_classes, df_features)
 
     # Exclude records with unknown class transaction
-    df_class_feature = df_class_feature[df_class_feature["class"] != '3']
-    features_unknown=   df_class_feature[df_class_feature["class"] == '3']
+    df_class_feature = df_feature[df_feature["class"] != '3']
+    features_unknown=   df_feature[df_feature["class"] == '3']
   
     # Build Dataframe with head and tail of transactions (edges)
     known_txs = df_class_feature["txId"].values
     df_edges = df_edges[(df_edges["txId1"].isin(known_txs)) & (df_edges["txId2"].isin(known_txs))]
+  
+    unknown_txs = features_unknown["txId"].values
+    df_unkown_edges = df_edges[(df_edges["txId1"].isin(unknown_txs)) | (df_edges["txId2"].isin(unknown_txs))]
 
     # Build indices for features and edge types
-    features_idx = {name: idx for idx, name in enumerate(sorted(df_class_feature["txId"].unique()))}
-    class_idx = {name: idx for idx, name in enumerate(sorted(df_class_feature["class"].unique()))}
+
+
+    features_idx = {name: idx for idx, name in enumerate(sorted(df_feature["txId"].unique()))}
+    class_idx = {name: idx for idx, name in enumerate(sorted(df_feature["class"].unique()))}
+
+  
+    features_unknown_idx = {name: idx for idx, name in enumerate(sorted(df_feature["txId"].unique()))}
+    class_unknown_idx = {name: idx for idx, name in enumerate(sorted(df_feature["class"].unique()))}
+
 
     # Apply index encoding to features
     df_class_feature["txId"] = df_class_feature["txId"].apply(lambda name: features_idx[name])
     df_class_feature["class"] = df_class_feature["class"].apply(lambda name: class_idx[name])
 
+    features_unknown["txId"] = features_unknown["txId"].apply(lambda name: features_unknown_idx[name])
+    features_unknown["class"] = features_unknown["class"].apply(lambda name: class_unknown_idx[name])
+
     # Apply index encoding to edges
     df_edges["txId1"] = df_edges["txId1"].apply(lambda name: features_idx[name])
     df_edges["txId2"] = df_edges["txId2"].apply(lambda name: features_idx[name])
+
+     df_edges["txId1"] = df_edges["txId1"].apply(lambda name: features_unknown_idx[name])
+    df_edges["txId2"] = df_edges["txId2"].apply(lambda name: features_unknown_idx[name])
     
     return df_class_feature, df_edges,features_unknown
 
