@@ -27,35 +27,18 @@ print("="*50)
 print("Loading graph data...")
 data_path = args.data_path if data_path is None else data_path
 
-feature, features_unknown, edges,df_known_edges, df_unkown_edges= load_data(data_path)
-features_noAgg, features_unknown_noAgg, edges_noAgg,df_known_edges_noAgg, df_unkown_edges_noAgg= load_data(data_path, noAgg=True)
+features,edges= load_data(data_path)
+features_noAgg, edges_noAgg= load_data(data_path, noAgg=True)
 
 
 
-
-deep_levels = 20
-keep = {}
-tries = 0
-minimum_nodes = 160
-
-while(len(keep) < minimum_nodes):
-  seed = get_random_illicit(features)
-  keep,edgeList,counter,complete = tracker(deep_levels,seed,edges)
-  tries = tries + 1
-
-print("is the graph complete: ",complete)
-print("iterations-> ",counter)
-print("transactions found->",len(keep))
-print("seed : ",seed)
-print("seed tried:", tries)
 
 
 
 
 u.seed_everything(42)
 
-data = data_to_pyg(features, df_known_edges)
-data_unknown=data_to_pyg(features_unknown, df_unkown_edges)
+data = data_to_pyg(features, edges)
 
 data_noAgg = data_to_pyg(features_noAgg, df_known_edges_noAgg)
 
@@ -122,48 +105,7 @@ for i in range(0, len(model_list), 2):
   
     print('-'*50)
   
-    out=test_unknown(model, data_unknown)
-    print('-'*50)
-    print(f"Drawing pictures for model: {name}")
-
-    plt.figure(figsize=(10, 10))
-    plt.subplot(2, 2, 1)  
-        
-    preds = pd.DataFrame(out.tolist(),columns=['class'])
-    features_unknown = features_unknown[['txId']+tx_features+agg_features].join(preds)
-    features_unknown['class'] = features_unknown['class'].apply(lambda x: 2 if x==0 else 1)
-    features_classified = features.append(features_unknown)
-    features_unknown['class'].hist()
-    features_unknown['class'].value_counts(normalize=True) * 100
     
-    plt.subplot(2, 2, 2) 
-    features_known['class'].hist()
-    features_known['class'].value_counts(normalize=True) * 100
-    
-    plt.subplot(2, 2, 3)  
-    
-    transaction_graph = nx.from_pandas_edgelist(edgeList,source='txId1', target='txId2')
-    transaction_type = features[features["txId"].isin(list(transaction_graph.nodes))]["class"].sort_index()
-    transaction_type = transaction_type.apply(lambda x: 'gray' if x == 0 else x)
-    transaction_type = transaction_type.apply(lambda x: 'red' if x == 1 else x)
-    transaction_type = transaction_type.apply(lambda x: 'green' if x == 2 else x)
-    my_pos = nx.spring_layout(transaction_graph, seed = 100)
-    nx.draw(transaction_graph,node_size=50, pos=my_pos,node_color=list(transaction_type),width=1)
-    
-    plt.subplot(2, 2, 4)  # 设置子图位置
-    transaction_graph = nx.from_pandas_edgelist(edgeList,source='txId1', target='txId2')
-    transaction_type = features_classified[features_classified["txId"].isin(list(transaction_graph.nodes))]["class"].sort_index()
-    transaction_type = transaction_type.apply(lambda x: 'gray' if x == 0 else x)
-    transaction_type = transaction_type.apply(lambda x: 'red' if x == 1 else x)
-    transaction_type = transaction_type.apply(lambda x: 'green' if x == 2 else x)
-    my_pos = nx.spring_layout(transaction_graph, seed = 100)
-    nx.draw(transaction_graph,node_size=50, pos=my_pos,node_color=list(transaction_type),width=1)
-    
-    
-    plt.tight_layout()  # 调整子图的布局
-    plt.show()
-    plt.savefig('transaction_graph.png')
-
     
     
 
