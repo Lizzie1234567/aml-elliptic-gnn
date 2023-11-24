@@ -66,19 +66,19 @@ def load_data(data_path, noAgg=False):
     if noAgg:
         df_features = df_features.drop(df_features.iloc[:, 96:], axis = 1)
 
-    # Map unknown class to '3'
-    df_classes.loc[df_classes['class'] == 'unknown', 'class'] = '3'
+    # Map unknown class to '0'
+    df_classes.loc[df_classes['class'] == 'unknown', 'class'] = '0'
 
     # Merge classes and features in one Dataframe
     df_feature = pd.merge(df_classes, df_features)
 
     # Exclude records with unknown class transaction
-    df_class_feature = df_feature[df_feature["class"] != '3']
-    features_unknown=   df_feature[df_feature["class"] == '3']
+    df_class_feature = df_feature[df_feature["class"] != '0']
+    features_unknown=   df_feature[df_feature["class"] == '0']
   
     # Build Dataframe with head and tail of transactions (edges)
     known_txs = df_class_feature["txId"].values
-    df_edges = df_edges[(df_edges["txId1"].isin(known_txs)) & (df_edges["txId2"].isin(known_txs))]
+    df_known_edges = df_edges[(df_edges["txId1"].isin(known_txs)) & (df_edges["txId2"].isin(known_txs))]
   
     unknown_txs = features_unknown["txId"].values
     df_unkown_edges = df_edges[(df_edges["txId1"].isin(unknown_txs)) | (df_edges["txId2"].isin(unknown_txs))]
