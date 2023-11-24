@@ -58,3 +58,11 @@ def test(model, data):
     out, _ = model((data.x, data.edge_index))
     acc = accuracy(out[data.test_mask].argmax(dim=1), data.y[data.test_mask])
     return acc
+
+
+@torch.no_grad()
+def test_unknown(model, data):
+    """Evaluate the model on test set and print the accuracy score."""
+    model.eval()
+    out, _ = model((data.x, data.edge_index))
+    return out[data.test_mask].argmax(dim=1)
