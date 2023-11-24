@@ -1,52 +1,11 @@
+
 import pandas as pd
 import torch
 import os.path as osp
 from torch_geometric.data import Data
 from torch_geometric.transforms import RandomNodeSplit
 
-def tracker(deep_levels, seed, edges):
-  tmp = {seed}
-  keep = set()
-  counter = 0
-
-  for i in range(deep_levels):
-    for j in tmp:
-      counter = counter + 1
-      one = edges[edges['txId1'] == j]
-      #add first
-      tmp = set.union(tmp,set(one['txId2'].iloc[:]))
-
-      two = edges[edges['txId2'] == j]
-      #add second
-      tmp = set.union(tmp,set(two['txId1'].iloc[:]))
-      # check if connected group is empty
-      if(len(one) == 0 & len(two) == 0):
-          edgeList = edges[edges['txId1'].isin(keep)]
-          return keep,edgeList,counter,True
-
-      keep.add(j)
-      tmp.remove(j)
-
-  edgeList = edges[edges['txId1'].isin(keep)]
-  return keep,edgeList,counter,False
-
-
-def get_random_illicit(features):
-  # get a random illicit transaction
-  randomIllicit = features[features["class"] == 1].sample(1)["txId"]
-  seed = randomIllicit.to_numpy()[0]
-  # define the final DF containg the cluster
-  return seed
-
-
-def get_random_licit(features):
-  # get a random illicit transaction
-  randomLicit = features[features["class"] == 2].sample(1)["txId"]
-  seed = randomLicit.to_numpy()[0]
-  # define the final DF containg the cluster
-  return seed
-
-def load_data(data_path):
+def load_data(data_path, noAgg=False):
 
     # Read edges, features and classes from csv files
     df_edges = pd.read_csv(osp.join(data_path, "elliptic_txs_edgelist.csv"))
@@ -63,16 +22,17 @@ def load_data(data_path):
 
     # Rename feature columns
     df_features = df_features.rename(columns=colNames)
-    #df_features = df_features.drop(df_features.iloc[:, 96:], axis=1)
+    if noAgg:
+        df_features = df_features.drop(df_features.iloc[:, 96:], axis = 1)
 
     # Map unknown class to '3'
-    df_classes.loc[df_classes['class'] == 'unknown', 'class'] = '0'
+    df_classes.loc[df_classes['class'] == 'unknown', 'class'] = '3'
 
     # Merge classes and features in one Dataframe
     df_class_feature = pd.merge(df_classes, df_features)
 
     # Exclude records with unknown class transaction
-    df_class_feature = df_class_feature[df_class_feature["class"] != '0']
+    df_class_feature = df_class_feature[df_class_feature["class"] != '3']
 
     # Build Dataframe with head and tail of transactions (edges)
     known_txs = df_class_feature["txId"].values
@@ -89,8 +49,9 @@ def load_data(data_path):
     # Apply index encoding to edges
     df_edges["txId1"] = df_edges["txId1"].apply(lambda name: features_idx[name])
     df_edges["txId2"] = df_edges["txId2"].apply(lambda name: features_idx[name])
-
+    
     return df_class_feature, df_edges
+
 
 def data_to_pyg(df_class_feature, df_edges):
 
@@ -101,6 +62,6 @@ def data_to_pyg(df_class_feature, df_edges):
     y = torch.tensor(df_class_feature["class"].values, dtype=torch.long)
 
     data = Data(x=x, edge_index=edge_index, y=y)
-    data = RandomNodeSplit(num_val=0.15, num_test=0.3)(data)
+    data = RandomNodeSplit(num_val=0.15, num_test=0.2)(data)
 
     return data
