@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 import utils as u
 import os
-from loader import load_data, data_to_pyg,tracker,
+from loader import load_data, data_to_pyg,tracker,get_random_illicit
 from train import train, test
 from models import models
 from argparse import ArgumentParser
@@ -26,6 +26,31 @@ data_path = args.data_path if data_path is None else data_path
 
 features, edges = load_data(data_path)
 features_noAgg, edges_noAgg = load_data(data_path, noAgg=True)
+
+deep_levels = 20
+keep = {}
+tries = 0
+minimum_nodes = 160
+
+while(len(keep) < minimum_nodes):
+  seed = get_random_illicit(features)
+  keep,edgeList,counter,complete = tracker(deep_levels,seed,edges)
+  tries = tries + 1
+
+print("is the graph complete: ",complete)
+print("iterations-> ",counter)
+print("transactions found->",len(keep))
+print("seed : ",seed)
+print("seed tried:", tries)
+print("transactions : \n")
+
+
+
+
+
+
+
+
 
 u.seed_everything(42)
 
