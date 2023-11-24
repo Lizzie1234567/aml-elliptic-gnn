@@ -74,7 +74,8 @@ def load_data(data_path, noAgg=False):
 
     # Exclude records with unknown class transaction
     df_class_feature = df_class_feature[df_class_feature["class"] != '3']
-
+    features_unknown=   df_class_feature[df_class_feature["class"] == '3']
+  
     # Build Dataframe with head and tail of transactions (edges)
     known_txs = df_class_feature["txId"].values
     df_edges = df_edges[(df_edges["txId1"].isin(known_txs)) & (df_edges["txId2"].isin(known_txs))]
@@ -91,7 +92,7 @@ def load_data(data_path, noAgg=False):
     df_edges["txId1"] = df_edges["txId1"].apply(lambda name: features_idx[name])
     df_edges["txId2"] = df_edges["txId2"].apply(lambda name: features_idx[name])
     
-    return df_class_feature, df_edges
+    return df_class_feature, df_edges,features_unknown
 
 
 def data_to_pyg(df_class_feature, df_edges):
