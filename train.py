@@ -1,12 +1,21 @@
 import torch
 import torch.nn.functional as F
-from torch.optim import Adam
+# from torch.optim import Adam
 from utils import accuracy
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+import torch.optim as optim
+
+
+
 def train(args, model, data):
     """Train a GNN model and return the trained model."""
-    optimizer = Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
+    # optimizer = Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
+    
+    # scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=100, factor=0.9, verbose=True)
+    
+
+    optimizer = optim.RMSprop(model.parameters(), lr=LEARNING_RATE, momentum=0.75,weight_decay=args['weight_decay'])
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=100, factor=0.9, verbose=True)
     epochs = args['epochs']
     model.train()
