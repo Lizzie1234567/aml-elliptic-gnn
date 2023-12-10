@@ -1,4 +1,4 @@
-from torch_geometric.nn import GCNConv, GATConv, SAGEConv, ChebConv,GIN,GINConv,global_mean_pool,GATModel,Dropout
+from torch_geometric.nn import GCNConv, GATConv, SAGEConv, ChebConv,GIN,GINConv,global_mean_pool,Dropout
 from torch.nn import Module, Linear,Sequential,ReLU,ModuleList
 from torch_geometric.nn.conv.gatv2_conv import GATv2Conv
 import torch.nn.functional as F
@@ -79,7 +79,7 @@ class GATConvolution(Module):
 #自定义
 class GATModel(Module):
     def __init__(self, args, num_features, hidden_units, num_heads=2, num_layers=2):
-        super(GATModel, self).__init__()
+        super().__init__()
         
         self.dense = Linear(num_features, hidden_units)
         self.dropout = Dropout()
