@@ -1,5 +1,5 @@
-from torch_geometric.nn import GCNConv, GATConv, SAGEConv, ChebConv,GIN,GINConv,global_mean_pool,ModuleList,GATModel,Dropout
-from torch.nn import Module, Linear,Sequential,ReLU
+from torch_geometric.nn import GCNConv, GATConv, SAGEConv, ChebConv,GIN,GINConv,global_mean_pool,GATModel,Dropout
+from torch.nn import Module, Linear,Sequential,ReLU,ModuleList
 from torch_geometric.nn.conv.gatv2_conv import GATv2Conv
 import torch.nn.functional as F
 
