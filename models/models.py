@@ -78,20 +78,36 @@ class GATConvolution(Module):
 
 #自定义
 class GATModel(Module):
-    def __init__(self, args, num_features, hidden_units, num_heads=2, num_layers=2):
-        super().__init__()
+    # def __init__(self, args, num_features, hidden_units, num_heads=2, num_layers=2):
+    #     super().__init__()
         
-        self.dense = Linear(num_features, hidden_units)
-        self.dropout = Dropout()
+    #     self.dense = Linear(num_features, hidden_units)
+    #     self.dropout = Dropout()
         
-        self.attention_layers = ModuleList()
-        for _ in range(num_layers):
-            self.attention_layers.append(GATConv(hidden_units, hidden_units, heads=num_heads))
+    #     self.attention_layers = ModuleList()
+    #     for _ in range(num_layers):
+    #         self.attention_layers.append(GATConv(hidden_units, hidden_units, heads=num_heads))
 
-        self.dense = Linear(num_features, hidden_units)
-        self.dropout = Dropout()
+    #     self.dense = Linear(num_features, hidden_units)
+    #     self.dropout = Dropout()
         
-        self.final_layer = Linear(hidden_units, args['num_classes'])
+    #     self.final_layer = Linear(hidden_units, args['num_classes'])
+
+
+    def __init__(self, args, num_features, hidden_units, num_heads=2, num_layers=2):
+            super().__init__()
+            
+            self.dense = Linear(num_features, hidden_units)
+            self.dropout = Dropout(p=0.5)
+            
+            self.attention_layers = ModuleList()
+            for _ in range(num_layers):
+                self.attention_layers.append(GATConv(hidden_units, hidden_units, heads=num_heads))
+
+            self.final_layer = Linear(hidden_units, args['num_classes'])
+
+
+
 
     def forward(self, data):
         x, edge_index = data
