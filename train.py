@@ -15,7 +15,7 @@ def train(args, model, data):
     # scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=100, factor=0.9, verbose=True)
     
 
-    optimizer = optim.RMSprop(model.parameters(), lr=LEARNING_RATE, momentum=0.75,weight_decay=args['weight_decay'])
+    optimizer = optim.RMSprop(model.parameters(), lr=args['lr'], momentum=0.75,weight_decay=args['weight_decay'])
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=100, factor=0.9, verbose=True)
     epochs = args['epochs']
     model.train()
